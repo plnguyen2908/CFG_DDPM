@@ -89,7 +89,7 @@ class ImprovedDiffusion(Diffusion):
 
 class Improved_CFG_Diffusion(Diffusion):
   def __init__(self, time = 1000, images_size = (64, 64), dtype = torch.float64, device = "cpu"):
-    super(Improved_CFG_Diffusion, self).__init__(time, images_size, dtype, device)
+    super(Diffusion, self).__init__(time, images_size, dtype, device)
 
   # implement the CFG sampling algorithm from https://arxiv.org/pdf/2207.12598.pdf
   def inference(self, model, noise, guidance_strength = 3, label = None, logging = False):
