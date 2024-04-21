@@ -44,17 +44,19 @@ class Diffusion(nn.Module):
     model.eval()
     with torch.no_grad():
       x = noise
-      for t in range(self.T, 0, -1):
-        z = torch.rand_like(x)
-        if t == 1:
+      for i in range(self.T, 0, -1):
+        z = torch.randn_like(x)
+        if i == 1:
           z *= 0.0
+          
+        t = (torch.ones(noise.shape[0], dtype = torch.long) * i).to(self.device)
 
-        alpha = 1 - self.beta[t - 1]
-        alpha_hat = self.alpha_hat[t - 1]
+        alpha = 1 - self.beta[i - 1]
+        alpha_hat = self.alpha_hat[i - 1]
         predicted_noise = model(x, t)
 
         x = 1.0 / torch.sqrt(alpha) * (x - ((1.0 - alpha) / torch.sqrt(1.0 - alpha_hat)) * predicted_noise) \
-          + torch.sqrt(self.beta[t]) * z
+          + torch.sqrt(self.beta[i - 1]) * z
 
     # convert back to range [-1, 1]
     x = x.clamp(-1, 1)
