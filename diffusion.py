@@ -82,9 +82,6 @@ class ImprovedDiffusion(Diffusion):
     alpha_hat = torch.cos(((t + s)/ (1 + s)) * (math.pi / 2.0)) ** 2
     alpha_hat[1:] /= alpha_hat[0]   
     
-    # start = 1.0 
-    # end= 0.01
-    # alpha_hat = torch.linspace(start, end, steps=self.T, self.dtype, device = self.device)
     return alpha_hat
 
 class Improved_CFG_Diffusion(Diffusion):
