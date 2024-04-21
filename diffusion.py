@@ -70,6 +70,7 @@ class Diffusion(nn.Module):
 class ImprovedDiffusion(Diffusion):
   def __init__(self, time = 1000, images_size = (64, 64), dtype = torch.float64, device = "cpu"):
     super(ImprovedDiffusion, self).__init__(time, images_size, dtype, device)
+    self.alpha_hat = self.alpha_hat[1:]
   
   def get_beta(self):
     beta = self.alpha_hat[1:] / self.alpha_hat[:-1]
