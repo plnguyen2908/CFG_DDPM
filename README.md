@@ -1,1 +1,1 @@
-# Classifier-Free Diffusion Model
+# Classifier-Free Guidance Diffusion Model
