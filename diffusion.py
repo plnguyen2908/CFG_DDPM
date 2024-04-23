@@ -71,7 +71,7 @@ class ImprovedDiffusion(Diffusion):
   def __init__(self, time = 1000, images_size = (64, 64), dtype = torch.float64, device = "cpu"):
     super(ImprovedDiffusion, self).__init__(time, images_size, dtype, device)
     self.alpha_hat = self.alpha_hat[1:]
-  
+    
   def get_beta(self):
     beta = self.alpha_hat[1:] / self.alpha_hat[:-1]
     return (1 - beta).clamp(max = 0.999)
@@ -82,6 +82,9 @@ class ImprovedDiffusion(Diffusion):
     alpha_hat = torch.cos(((t + s)/ (1 + s)) * (math.pi / 2.0)) ** 2
     alpha_hat[1:] /= alpha_hat[0]   
     
+    # start = 1.0 
+    # end= 0.01
+    # alpha_hat = torch.linspace(start, end, steps=self.T, self.dtype, device = self.device)
     return alpha_hat
 
 class Improved_CFG_Diffusion(Diffusion):
@@ -112,6 +115,50 @@ class Improved_CFG_Diffusion(Diffusion):
         if i != 1:
           x += torch.sqrt(beta) * z
         if logging == True and i % 100 == 0:
+            plt.imshow(((x[0].clamp(-1, 1) + 1) / 2).cpu().permute(1, 2, 0))
+            plt.show()
+  
+    model.train()
+    # convert back to range [0, 1]
+    x = (x.clamp(-1, 1) + 1) / 2 
+    return x
+
+  def compressed_inference(self, model, noise, guidance_strength = 3, label = None, logging = False, sequence_length = 50):
+    seq = torch.linspace(1, self.T, sequence_length, dtype = self.dtype, device = self.device)
+    seq = torch.round(seq).to(dtype = torch.int)
+    # print(seq)
+    model.eval()
+    with torch.no_grad():
+      x = noise
+      for u in range(len(seq) - 1, -1, -1):
+        i = seq[u]
+
+        z = torch.randn_like(x)
+        # if i == 1:
+        #   z *= 0.0
+        t = (torch.ones(noise.shape[0], dtype = torch.long).to(self.device) * i).to(self.device)
+
+        predicted_noise = model(x, t, label)
+        if guidance_strength > 0:
+            uncond_predicted_noise = model(x, t, None)
+            predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise, guidance_strength + 1)
+            
+        alpha_hat = self.alpha_hat[i - 1]
+        
+        beta = alpha_hat
+        if u != 0:
+          prev = seq[u - 1]
+          beta /= self.alpha_hat[prev - 1]
+
+        beta = 1 - beta
+        alpha = 1 - beta
+
+        x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / (torch.sqrt(1 - alpha_hat + 1e-6))) * predicted_noise) 
+        
+        if u != 0:
+          x += torch.sqrt(beta) * z
+
+        if logging == True and (u + 1) % 20 == 0:
             plt.imshow(((x[0].clamp(-1, 1) + 1) / 2).cpu().permute(1, 2, 0))
             plt.show()
   
