@@ -23,29 +23,6 @@ The goal of this project is to train a diffusion model with linear noise schedul
 
 ## How to run
 
-First, upload all files and folder into a folder on google drive.
-
-## Imports
-
-This project is setup as a package which means you can now easily import any file into any other file like so:
-
-```python
-from project.datasets.mnist import mnist
-from project.lit_classifier_main import LitClassifier
-from pytorch_lightning import Trainer
-
-# model
-model = LitClassifier()
-
-# data
-train, val, test = mnist()
-
-# train
-trainer = Trainer()
-trainer.fit(model, train, val)
-
-# test using the best model!
-trainer.test(test_dataloaders=test)
-```
+First, upload all files and folder into a folder on google drive. Then runs on Google Colab. We will have detailed instruction later. For now, here is the link to our model's weight. You can download it and upload to a newly created folder called "models": https://drive.google.com/drive/folders/13iYCsLCtw9T9CVS3tAo3WdnHWxzD9YwP?usp=sharing.
 
 ## Reference
